@@ -227,7 +227,7 @@ export function RunDetail() {
 
         {/* Corrective Actions */}
         <div>
-          <CorrectiveActions actions={run.corrective_actions} />
+          <CorrectiveActions actions={run.corrective_actions} status={run.status} />
 
           {/* Quick links */}
           <Card className="mt-4">

@@ -3,6 +3,13 @@ import type {
   PipelineIndexEntry,
   PipelineManifest,
 } from '@/types/pipeline';
+import {
+  getActiveWorkflowRuns,
+  getGitHubWorkflowRun,
+  transformToIndexEntry,
+  transformToPipelineRun,
+  isGitHubApiEnabled,
+} from './github';
 
 // =============================================================================
 // Configuration
@@ -18,6 +25,10 @@ const REPOSITORIES = [
   'OasysInnovationLab/oil-keycloak',
   'OasysInnovationLab/website',
 ];
+
+// Cache for rate limit tracking
+let githubRateLimited = false;
+let rateLimitResetTime: Date | null = null;
 
 // =============================================================================
 // API Client
@@ -41,9 +52,9 @@ async function fetchJson<T>(url: string): Promise<T> {
 // =============================================================================
 
 /**
- * Fetch the latest pipeline runs for a repository
+ * Fetch the latest pipeline runs for a repository from S3
  */
-export async function getLatestRuns(repository: string): Promise<PipelineIndexEntry[]> {
+export async function getLatestRunsFromS3(repository: string): Promise<PipelineIndexEntry[]> {
   const url = `${API_BASE}/index/${repository}/latest.json`;
   
   try {
@@ -57,14 +68,143 @@ export async function getLatestRuns(repository: string): Promise<PipelineIndexEn
 }
 
 /**
- * Fetch a specific pipeline run by ID
+ * Fetch live runs from GitHub API
+ */
+async function getLiveRunsFromGitHub(repository: string): Promise<PipelineIndexEntry[]> {
+  // Check rate limit status
+  if (githubRateLimited && rateLimitResetTime && new Date() < rateLimitResetTime) {
+    console.log('GitHub API rate limited, skipping live data fetch');
+    return [];
+  }
+
+  if (!isGitHubApiEnabled()) {
+    return [];
+  }
+
+  const [owner, repo] = repository.split('/');
+  if (!owner || !repo) return [];
+
+  try {
+    const activeRuns = await getActiveWorkflowRuns(owner, repo);
+    githubRateLimited = false;
+    return activeRuns.map(transformToIndexEntry);
+  } catch (error) {
+    if ((error as Error).message.includes('rate limit')) {
+      githubRateLimited = true;
+      // Parse reset time from error message if available
+      const match = (error as Error).message.match(/Resets at (.+)/);
+      if (match) {
+        rateLimitResetTime = new Date(match[1]);
+      } else {
+        rateLimitResetTime = new Date(Date.now() + 60000); // Default 1 minute
+      }
+    }
+    console.warn(`Failed to fetch live runs from GitHub for ${repository}:`, error);
+    return [];
+  }
+}
+
+/**
+ * Fetch the latest pipeline runs for a repository (merges S3 + live GitHub data)
+ */
+export async function getLatestRuns(repository: string): Promise<PipelineIndexEntry[]> {
+  // Fetch both S3 data and live GitHub data in parallel
+  const [s3Runs, liveRuns] = await Promise.all([
+    getLatestRunsFromS3(repository),
+    getLiveRunsFromGitHub(repository),
+  ]);
+
+  // Create a map of run_id to run data
+  const runMap = new Map<number, PipelineIndexEntry>();
+
+  // Add S3 runs first (these are the source of truth for completed runs)
+  for (const run of s3Runs) {
+    runMap.set(run.run_id, run);
+  }
+
+  // Override with live runs (more up-to-date for in-progress/queued)
+  // But only if the run is still active
+  for (const liveRun of liveRuns) {
+    const existingRun = runMap.get(liveRun.run_id);
+    if (!existingRun) {
+      // New run not in S3 yet
+      runMap.set(liveRun.run_id, liveRun);
+    } else if (liveRun.status === 'in_progress' || liveRun.status === 'queued') {
+      // Update with live status if still running
+      runMap.set(liveRun.run_id, { ...existingRun, ...liveRun });
+    }
+    // If live run is completed but S3 has it, prefer S3 (has corrective actions)
+  }
+
+  // Sort by started_at descending
+  return Array.from(runMap.values())
+    .sort((a, b) => new Date(b.started_at).getTime() - new Date(a.started_at).getTime());
+}
+
+/**
+ * Fetch a specific pipeline run by ID from S3
+ */
+async function getPipelineRunFromS3(
+  repository: string,
+  runId: string | number
+): Promise<PipelineRun | null> {
+  const url = `${API_BASE}/runs/${repository}/${runId}.json`;
+  try {
+    return await fetchJson<PipelineRun>(url);
+  } catch (error) {
+    if ((error as Error).message === 'Not found') {
+      return null;
+    }
+    throw error;
+  }
+}
+
+/**
+ * Fetch a specific pipeline run by ID (prefers S3, falls back to GitHub for live runs)
  */
 export async function getPipelineRun(
   repository: string,
   runId: string | number
 ): Promise<PipelineRun> {
-  const url = `${API_BASE}/runs/${repository}/${runId}.json`;
-  return fetchJson<PipelineRun>(url);
+  const [owner, repo] = repository.split('/');
+  const numericRunId = typeof runId === 'string' ? parseInt(runId, 10) : runId;
+
+  // First, try to get from S3 (source of truth for completed runs)
+  const s3Run = await getPipelineRunFromS3(repository, runId);
+
+  // If S3 has the run and it's completed, return it (has corrective actions)
+  if (s3Run && (s3Run.status === 'success' || s3Run.status === 'failure' || s3Run.status === 'cancelled')) {
+    return s3Run;
+  }
+
+  // For in-progress/queued runs, or runs not in S3, fetch live from GitHub
+  if (isGitHubApiEnabled() && !githubRateLimited) {
+    try {
+      const githubRun = await getGitHubWorkflowRun(owner, repo, numericRunId);
+      const liveRun = await transformToPipelineRun(owner, repo, githubRun);
+      
+      // If we have S3 data, merge corrective actions if available
+      if (s3Run?.corrective_actions?.length) {
+        liveRun.corrective_actions = s3Run.corrective_actions;
+      }
+      
+      return liveRun;
+    } catch (error) {
+      console.warn(`Failed to fetch live run from GitHub:`, error);
+      // Fall back to S3 data if available
+      if (s3Run) {
+        return s3Run;
+      }
+      throw new Error(`Run ${runId} not found`);
+    }
+  }
+
+  // If GitHub is unavailable but we have S3 data, return it
+  if (s3Run) {
+    return s3Run;
+  }
+
+  throw new Error(`Run ${runId} not found`);
 }
 
 /**

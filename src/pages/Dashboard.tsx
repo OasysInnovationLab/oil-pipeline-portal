@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { RefreshCw, Filter, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { RefreshCw, Filter, CheckCircle, XCircle, Clock, Radio } from 'lucide-react';
 import { useRecentRuns, usePipelineStats } from '@/hooks/usePipelines';
+import { hasGitHubToken } from '@/api/github';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
@@ -43,15 +44,22 @@ export function Dashboard() {
             Monitor CI/CD pipeline status across all repositories
           </p>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => refetch()}
-          disabled={isFetching}
-        >
-          <RefreshCw className={`h-4 w-4 mr-2 ${isFetching ? 'animate-spin' : ''}`} />
-          Refresh
-        </Button>
+        <div className="flex items-center gap-3">
+          {/* Live indicator */}
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Radio className="h-3 w-3 text-green-500 animate-pulse" />
+            <span>Live updates {hasGitHubToken() ? 'enabled' : '(unauthenticated)'}</span>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => refetch()}
+            disabled={isFetching}
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${isFetching ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+        </div>
       </div>
 
       {/* Stats cards */}

@@ -1,13 +1,49 @@
-import { AlertTriangle, AlertCircle, Info, ExternalLink, Wrench } from 'lucide-react';
+import { AlertTriangle, AlertCircle, Info, ExternalLink, Wrench, Loader2, XCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { cn } from '@/lib/utils';
-import type { CorrectiveAction } from '@/types/pipeline';
+import type { CorrectiveAction, PipelineStatus } from '@/types/pipeline';
 
 interface CorrectiveActionsProps {
   actions: CorrectiveAction[];
+  status?: PipelineStatus;
 }
 
-export function CorrectiveActions({ actions }: CorrectiveActionsProps) {
+export function CorrectiveActions({ actions, status }: CorrectiveActionsProps) {
+  // Show loading state for in-progress or queued runs
+  if (status === 'in_progress' || status === 'queued') {
+    return (
+      <Card className="border-blue-500/20 bg-blue-500/5">
+        <CardContent className="p-4">
+          <div className="flex items-center gap-2 text-blue-600">
+            <Loader2 className="h-5 w-5 animate-spin" />
+            <span className="font-medium">Pipeline in progress</span>
+          </div>
+          <p className="text-sm text-muted-foreground mt-1">
+            Corrective actions will be available once the pipeline completes.
+            This page auto-refreshes every 5 seconds.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Show cancelled state
+  if (status === 'cancelled') {
+    return (
+      <Card className="border-gray-500/20 bg-gray-500/5">
+        <CardContent className="p-4">
+          <div className="flex items-center gap-2 text-gray-600">
+            <XCircle className="h-5 w-5" />
+            <span className="font-medium">Pipeline was cancelled</span>
+          </div>
+          <p className="text-sm text-muted-foreground mt-1">
+            No corrective actions needed for cancelled pipelines.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   if (actions.length === 0) {
     return (
       <Card className="border-green-500/20 bg-green-500/5">
