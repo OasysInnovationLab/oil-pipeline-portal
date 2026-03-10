@@ -4,11 +4,11 @@ import { useRecentRuns } from '@/hooks/usePipelines';
 import { hasGitHubToken } from '@/api/github';
 import { Button } from '@/components/ui/Button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { ExecutiveSummary } from '@/components/pipeline/ExecutiveSummary';
+import { OverviewSummary } from '@/components/pipeline/OverviewSummary';
 
 type Period = 'day' | 'week' | 'month';
 
-export function ExecutiveDashboard() {
+export function OverviewDashboard() {
   const [period, setPeriod] = useState<Period>('week');
   const { data: runs, isLoading, error, refetch, isFetching } = useRecentRuns(200);
 
@@ -31,10 +31,10 @@ export function ExecutiveDashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">
-            Executive Dashboard
+            Pipeline Portal
           </h1>
           <p className="text-white/50 mt-1">
-            High-level overview of deployment activity and health
+            Deployment activity and system health at a glance
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -76,10 +76,10 @@ export function ExecutiveDashboard() {
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
           <LoadingSpinner size="lg" />
-          <span className="ml-3 text-muted-foreground">Loading executive summary...</span>
+          <span className="ml-3 text-muted-foreground">Loading summary...</span>
         </div>
       ) : runs && runs.length > 0 ? (
-        <ExecutiveSummary runs={runs} period={period} />
+        <OverviewSummary runs={runs} period={period} />
       ) : (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <TrendingUp className="h-16 w-16 text-muted-foreground mb-4 opacity-50" />

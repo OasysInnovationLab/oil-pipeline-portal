@@ -13,8 +13,8 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navigation = [
-    { name: 'Pipelines', href: '/', icon: Gauge },
-    { name: 'Executive', href: '/executive', icon: BarChart3 },
+    { name: 'Overview', href: '/', icon: BarChart3 },
+    { name: 'Pipelines', href: '/pipelines', icon: Gauge },
   ];
 
   const isActive = (href: string) => {

@@ -14,36 +14,20 @@ import { StatusBadge } from './StatusBadge';
 import { formatDuration, formatRelativeTime, cn } from '@/lib/utils';
 import type {
   PipelineIndexEntry,
-  ExecutiveSummary as ExecutiveSummaryType,
+  ExecutiveSummary as SummaryType,
   DeploymentHighlight,
 } from '@/types/pipeline';
 
-interface ExecutiveSummaryProps {
+interface OverviewSummaryProps {
   runs: (PipelineIndexEntry & { repository: string })[];
   period?: 'day' | 'week' | 'month';
 }
 
-export function ExecutiveSummary({ runs, period = 'week' }: ExecutiveSummaryProps) {
-  const summary = calculateExecutiveSummary(runs, period);
+export function OverviewSummary({ runs, period = 'week' }: OverviewSummaryProps) {
+  const summary = calculateSummary(runs, period);
 
   return (
     <div className="space-y-6">
-      {/* Executive Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-            Executive Overview
-          </h2>
-          <p className="text-white/50 text-sm">
-            Pipeline activity summary for the past {period}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Activity className="h-5 w-5 text-green-400 animate-pulse" />
-          <span className="text-sm text-white/60">Live Data</span>
-        </div>
-      </div>
-
       {/* Key Metrics Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <MetricCard
@@ -301,7 +285,7 @@ function ActivityItem({
 function EnvironmentHealth({
   summary,
 }: {
-  summary: ExecutiveSummaryType;
+  summary: SummaryType;
 }) {
   const environments = ['dev', 'staging', 'prod'] as const;
 
@@ -357,10 +341,10 @@ function EnvironmentHealth({
 // Helper Functions
 // =============================================================================
 
-function calculateExecutiveSummary(
+function calculateSummary(
   runs: (PipelineIndexEntry & { repository: string })[],
   period: 'day' | 'week' | 'month'
-): ExecutiveSummaryType {
+): SummaryType {
   const now = new Date();
   const periodMs = {
     day: 24 * 60 * 60 * 1000,
