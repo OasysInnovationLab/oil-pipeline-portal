@@ -19,11 +19,12 @@ const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
 // List of repositories to display (can be fetched from a config endpoint later)
 const REPOSITORIES = [
+  'OasysInnovationLab/uscg-alc-ce-tip-wfe',
+  'OasysInnovationLab/uscg-alc-ce-tip-ms',
   'OasysInnovationLab/uscg-alc--service-template',
   'OasysInnovationLab/uscg-alc--ci-test-harness',
   'OasysInnovationLab/oil-ai-agent-foundry',
   'OasysInnovationLab/oil-keycloak',
-  'OasysInnovationLab/website',
 ];
 
 // Cache for rate limit tracking
@@ -35,7 +36,16 @@ let rateLimitResetTime: Date | null = null;
 // =============================================================================
 
 async function fetchJson<T>(url: string): Promise<T> {
-  const response = await fetch(url);
+  // Add cache-busting timestamp to prevent stale data
+  const cacheBuster = `_t=${Date.now()}`;
+  const urlWithCache = url.includes('?') ? `${url}&${cacheBuster}` : `${url}?${cacheBuster}`;
+  
+  const response = await fetch(urlWithCache, {
+    cache: 'no-store',
+    headers: {
+      'Cache-Control': 'no-cache',
+    },
+  });
   
   if (!response.ok) {
     if (response.status === 404) {
