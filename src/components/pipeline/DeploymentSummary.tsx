@@ -50,7 +50,7 @@ export function DeploymentSummary({ summary, className }: DeploymentSummaryProps
         </div>
 
         {/* Services Deployed */}
-        {summary.services_deployed.length > 0 && (
+        {summary.services_deployed && summary.services_deployed.length > 0 && (
           <div>
             <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
               <Server className="h-4 w-4" />
@@ -70,7 +70,7 @@ export function DeploymentSummary({ summary, className }: DeploymentSummaryProps
         )}
 
         {/* Changes */}
-        {summary.changes.length > 0 && (
+        {summary.changes && summary.changes.length > 0 && (
           <div>
             <h4 className="text-sm font-medium mb-3">What's Changed</h4>
             <div className="space-y-2">
@@ -92,14 +92,19 @@ export function DeploymentSummary({ summary, className }: DeploymentSummaryProps
 // Sub-components
 // =============================================================================
 
-function EnvironmentBadge({ environment }: { environment: 'dev' | 'staging' | 'prod' }) {
-  const colors = {
+function EnvironmentBadge({ environment }: { environment: string }) {
+  // Normalize environment name
+  const normalizedEnv = environment === 'development' ? 'dev' 
+    : environment === 'production' ? 'prod' 
+    : environment;
+  
+  const colors: Record<string, string> = {
     dev: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
     staging: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
     prod: 'bg-green-500/20 text-green-400 border-green-500/30',
   };
 
-  const labels = {
+  const labels: Record<string, string> = {
     dev: 'Development',
     staging: 'Staging',
     prod: 'Production',
@@ -109,10 +114,10 @@ function EnvironmentBadge({ environment }: { environment: 'dev' | 'staging' | 'p
     <span
       className={cn(
         'ml-auto px-2 py-0.5 text-xs rounded-full border font-medium',
-        colors[environment]
+        colors[normalizedEnv] || colors.dev
       )}
     >
-      {labels[environment]}
+      {labels[normalizedEnv] || environment}
     </span>
   );
 }
@@ -273,11 +278,16 @@ interface DeploymentSummaryCompactProps {
 }
 
 export function DeploymentSummaryCompact({ summary }: DeploymentSummaryCompactProps) {
-  const changeCount = summary.changes.length;
-  const changesByType = summary.changes.reduce((acc, change) => {
+  const changes = summary.changes || [];
+  const changeCount = changes.length;
+  const changesByType = changes.reduce((acc, change) => {
     acc[change.type] = (acc[change.type] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
+
+  // Also count features/bugfixes from alternative format
+  const featureCount = changesByType.feature || (summary.features?.length || 0);
+  const bugfixCount = changesByType.bugfix || (summary.bugfixes?.length || 0);
 
   return (
     <div className="flex items-center gap-2 text-xs">
@@ -292,11 +302,11 @@ export function DeploymentSummaryCompact({ summary }: DeploymentSummaryCompactPr
           </span>
         </>
       )}
-      {changesByType.feature && (
-        <span className="text-green-400">+{changesByType.feature} features</span>
+      {featureCount > 0 && (
+        <span className="text-green-400">+{featureCount} feature{featureCount !== 1 ? 's' : ''}</span>
       )}
-      {changesByType.bugfix && (
-        <span className="text-red-400">{changesByType.bugfix} fixes</span>
+      {bugfixCount > 0 && (
+        <span className="text-red-400">{bugfixCount} fix{bugfixCount !== 1 ? 'es' : ''}</span>
       )}
     </div>
   );

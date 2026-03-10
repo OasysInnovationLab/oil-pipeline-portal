@@ -103,12 +103,19 @@ export interface PipelineManifest {
 // =============================================================================
 
 export interface DeploymentSummary {
-  environment: 'dev' | 'staging' | 'prod';
-  services_deployed: string[];
+  environment: 'dev' | 'staging' | 'prod' | 'development' | 'production';
+  services_deployed?: string[];
   version: string;
   previous_version?: string;
-  changes: DeploymentChange[];
+  changes?: DeploymentChange[];
   metrics?: DeploymentMetrics;
+  // Alternative format fields
+  title?: string;
+  features?: string[];
+  bugfixes?: string[];
+  improvements?: string[];
+  breaking_changes?: string[];
+  highlights?: DeploymentHighlight[];
 }
 
 export interface DeploymentChange {
