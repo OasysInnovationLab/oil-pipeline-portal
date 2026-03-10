@@ -33,6 +33,7 @@ jobs:
           VITE_KEYCLOAK_URL: https://auth.oasysic.net
           VITE_KEYCLOAK_REALM: oil
           VITE_KEYCLOAK_CLIENT_ID: pipeline-portal
+          VITE_GITHUB_TOKEN: ${{ secrets.VITE_GITHUB_TOKEN }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
