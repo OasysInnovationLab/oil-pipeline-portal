@@ -15,7 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { StatusBadge } from '@/components/pipeline/StatusBadge';
-import { JobTimeline, JobSteps } from '@/components/pipeline/JobTimeline';
+import { JobTimeline } from '@/components/pipeline/JobTimeline';
 import { CorrectiveActions } from '@/components/pipeline/CorrectiveActions';
 import { DeploymentSummary } from '@/components/pipeline/DeploymentSummary';
 import { formatDuration, formatRelativeTime } from '@/lib/utils';
@@ -66,8 +66,6 @@ export function RunDetail() {
       </div>
     );
   }
-
-  const selectedJobData = selectedJob ? run.jobs[selectedJob] : null;
 
   return (
     <div className="space-y-6">
@@ -216,18 +214,8 @@ export function RunDetail() {
             <JobTimeline
               jobs={run.jobs}
               selectedJob={selectedJob || undefined}
-              onJobClick={setSelectedJob}
+              onJobClick={(name) => setSelectedJob(selectedJob === name ? null : name)}
             />
-
-            {/* Selected job steps */}
-            {selectedJobData && (
-              <div className="mt-4 pt-4 border-t">
-                <h4 className="font-medium text-sm mb-3">
-                  Steps for: {selectedJob}
-                </h4>
-                <JobSteps job={selectedJobData} />
-              </div>
-            )}
           </CardContent>
         </Card>
 

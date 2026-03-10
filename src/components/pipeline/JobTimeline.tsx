@@ -23,15 +23,21 @@ export function JobTimeline({ jobs, onJobClick, selectedJob }: JobTimelineProps)
   return (
     <div className="space-y-1">
       {sortedJobs.map(([name, job], index) => (
-        <JobTimelineItem
-          key={name}
-          name={name}
-          job={job}
-          isFirst={index === 0}
-          isLast={index === sortedJobs.length - 1}
-          isSelected={selectedJob === name}
-          onClick={() => onJobClick?.(name)}
-        />
+        <div key={name}>
+          <JobTimelineItem
+            name={name}
+            job={job}
+            isFirst={index === 0}
+            isLast={index === sortedJobs.length - 1}
+            isSelected={selectedJob === name}
+            onClick={() => onJobClick?.(name)}
+          />
+          {selectedJob === name && (
+            <div className="ml-8 mt-1 mb-2">
+              <JobSteps job={job} />
+            </div>
+          )}
+        </div>
       ))}
     </div>
   );
