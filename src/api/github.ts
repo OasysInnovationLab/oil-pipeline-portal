@@ -409,7 +409,9 @@ function generateLiveCorrectiveActions(jobs: Record<string, JobInfo>) {
 // =============================================================================
 
 export function isGitHubApiEnabled(): boolean {
-  return true; // Always try, will fail gracefully if no token/rate limited
+  // Only enable live GitHub API calls if we have a token configured
+  // This prevents 404 errors for private repositories
+  return !!GITHUB_TOKEN;
 }
 
 export function hasGitHubToken(): boolean {
