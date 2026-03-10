@@ -1,3 +1,4 @@
+import { useRef, useEffect, useState } from 'react';
 import { StatusIcon } from './StatusBadge';
 import { formatDuration } from '@/lib/utils';
 import { cn } from '@/lib/utils';
@@ -23,21 +24,15 @@ export function JobTimeline({ jobs, onJobClick, selectedJob }: JobTimelineProps)
   return (
     <div className="space-y-1">
       {sortedJobs.map(([name, job], index) => (
-        <div key={name}>
-          <JobTimelineItem
-            name={name}
-            job={job}
-            isFirst={index === 0}
-            isLast={index === sortedJobs.length - 1}
-            isSelected={selectedJob === name}
-            onClick={() => onJobClick?.(name)}
-          />
-          {selectedJob === name && (
-            <div className="ml-8 mt-1 mb-2">
-              <JobSteps job={job} />
-            </div>
-          )}
-        </div>
+        <JobTimelineItem
+          key={name}
+          name={name}
+          job={job}
+          isFirst={index === 0}
+          isLast={index === sortedJobs.length - 1}
+          isSelected={selectedJob === name}
+          onClick={() => onJobClick?.(name)}
+        />
       ))}
     </div>
   );
@@ -60,58 +55,89 @@ function JobTimelineItem({
   isSelected,
   onClick,
 }: JobTimelineItemProps) {
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        'w-full flex items-center gap-3 p-3 rounded-lg text-left transition-colors',
-        'hover:bg-muted/50',
-        isSelected && 'bg-muted border border-primary/20'
-      )}
-    >
-      {/* Status indicator with connector line */}
-      <div className="relative flex flex-col items-center">
-        {!isFirst && (
-          <div className="absolute bottom-full h-2 w-0.5 bg-border" />
-        )}
-        <StatusIcon status={job.status} size="md" />
-        {!isLast && (
-          <div className="absolute top-full h-2 w-0.5 bg-border" />
-        )}
-      </div>
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [height, setHeight] = useState(0);
 
-      {/* Job info */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="font-medium text-sm truncate">{name}</span>
-          {job.failed_steps.length > 0 && (
-            <span className="text-xs text-red-500">
-              ({job.failed_steps.length} failed)
+  useEffect(() => {
+    if (isSelected && contentRef.current) {
+      setHeight(contentRef.current.scrollHeight);
+    } else {
+      setHeight(0);
+    }
+  }, [isSelected]);
+
+  return (
+    <div>
+      <button
+        onClick={onClick}
+        className={cn(
+          'w-full flex items-center gap-3 p-3 rounded-lg text-left transition-all duration-200',
+          'hover:bg-muted/50',
+          isSelected && [
+            'bg-white/[0.08] border border-white/[0.14] backdrop-blur-sm',
+            'shadow-md shadow-black/10',
+          ]
+        )}
+      >
+        {/* Status indicator with connector line */}
+        <div className="relative flex flex-col items-center">
+          {!isFirst && (
+            <div className="absolute bottom-full h-2 w-0.5 bg-border" />
+          )}
+          <StatusIcon status={job.status} size="md" />
+          {!isLast && (
+            <div className="absolute top-full h-2 w-0.5 bg-border" />
+          )}
+        </div>
+
+        {/* Job info */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="font-medium text-sm truncate">{name}</span>
+            {job.failed_steps.length > 0 && (
+              <span className="text-xs text-red-500">
+                ({job.failed_steps.length} failed)
+              </span>
+            )}
+          </div>
+          {job.duration_seconds && (
+            <span className="text-xs text-muted-foreground">
+              {formatDuration(job.duration_seconds)}
             </span>
           )}
         </div>
-        {job.duration_seconds && (
-          <span className="text-xs text-muted-foreground">
-            {formatDuration(job.duration_seconds)}
-          </span>
+
+        {/* External link */}
+        {job.url && (
+          <a
+            href={job.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="text-muted-foreground hover:text-foreground"
+          >
+            <ExternalLink className="h-4 w-4" />
+          </a>
         )}
+
+        <ChevronRight
+          className={cn(
+            'h-4 w-4 text-muted-foreground transition-transform duration-200',
+            isSelected && 'rotate-90'
+          )}
+        />
+      </button>
+
+      {/* Expandable steps */}
+      <div
+        className="overflow-hidden transition-[height] duration-200 ease-out"
+        style={{ height }}
+      >
+        <div ref={contentRef} className="ml-8 pt-1 pb-2">
+          <JobSteps job={job} />
+        </div>
       </div>
-
-      {/* External link */}
-      {job.url && (
-        <a
-          href={job.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={(e) => e.stopPropagation()}
-          className="text-muted-foreground hover:text-foreground"
-        >
-          <ExternalLink className="h-4 w-4" />
-        </a>
-      )}
-
-      <ChevronRight className="h-4 w-4 text-muted-foreground" />
-    </button>
+    </div>
   );
 }
 
