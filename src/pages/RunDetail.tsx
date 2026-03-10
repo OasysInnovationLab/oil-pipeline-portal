@@ -17,6 +17,7 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { StatusBadge } from '@/components/pipeline/StatusBadge';
 import { JobTimeline, JobSteps } from '@/components/pipeline/JobTimeline';
 import { CorrectiveActions } from '@/components/pipeline/CorrectiveActions';
+import { DeploymentSummary } from '@/components/pipeline/DeploymentSummary';
 import { formatDuration, formatRelativeTime } from '@/lib/utils';
 
 export function RunDetail() {
@@ -198,6 +199,11 @@ export function RunDetail() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Deployment Summary - if available */}
+      {run.deployment_summary && (
+        <DeploymentSummary summary={run.deployment_summary} />
+      )}
 
       {/* Main content - Jobs and Corrective Actions */}
       <div className="grid gap-6 lg:grid-cols-2">

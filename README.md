@@ -6,10 +6,40 @@ Pipeline Status Portal for OIL Software Factory - Track CI/CD pipeline status an
 
 - 🔐 **Keycloak SSO Authentication** - Secure access via OIL Identity Provider
 - 📊 **Pipeline Dashboard** - View pipeline runs across all repositories
+- � **Executive Dashboard** - High-level overview for executives and stakeholders
 - 🔍 **Run Details** - Detailed job status, steps, and timing information
+- 📦 **Deployment Summaries** - Track what changed in each deployment
 - 🔧 **Corrective Actions** - Intelligent suggestions for fixing pipeline failures
 - 🔗 **Git Integration** - Direct links to commits, PRs, and diffs
+- 🔔 **Real-time Notifications** - Get notified when pipelines complete
 - 🌙 **Dark Mode** - Automatic theme switching based on system preferences
+
+## Views
+
+### Pipeline Dashboard (`/`)
+
+The main dashboard shows all recent pipeline runs across repositories with:
+- Real-time status updates from GitHub Actions
+- Filtering by status (success, failure, in-progress)
+- Live notifications when pipelines complete
+- Statistics including success rate and average duration
+
+### Executive Dashboard (`/executive`)
+
+A high-level view designed for executives and stakeholders:
+- Key metrics: total deployments, success rate, average build time
+- Active pipelines with progress indicators
+- Environment health overview (dev/staging/prod)
+- Recent activity feed
+- Period selector (today/this week/this month)
+
+### Run Detail (`/runs/:owner/:repo/:runId`)
+
+Detailed view of individual pipeline runs:
+- Deployment summary showing what changed
+- Job timeline with step-by-step progress
+- Corrective actions for failures
+- Direct links to GitHub
 
 ## Quick Start
 

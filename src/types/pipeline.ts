@@ -19,6 +19,7 @@ export interface PipelineRun {
   jobs: Record<string, JobInfo>;
   corrective_actions: CorrectiveAction[];
   links: PipelineLinks;
+  deployment_summary?: DeploymentSummary;
 }
 
 export interface CommitInfo {
@@ -95,6 +96,91 @@ export interface PipelineManifest {
   run_ids: string[];
   updated_at: string;
   total_runs: number;
+}
+
+// =============================================================================
+// Deployment Summary Types
+// =============================================================================
+
+export interface DeploymentSummary {
+  environment: 'dev' | 'staging' | 'prod';
+  services_deployed: string[];
+  version: string;
+  previous_version?: string;
+  changes: DeploymentChange[];
+  metrics?: DeploymentMetrics;
+}
+
+export interface DeploymentChange {
+  type: 'feature' | 'bugfix' | 'security' | 'performance' | 'infrastructure' | 'documentation';
+  title: string;
+  description?: string;
+  ticket_id?: string;
+  author: string;
+}
+
+export interface DeploymentMetrics {
+  tests_passed: number;
+  tests_failed: number;
+  coverage_percent?: number;
+  security_issues_found: number;
+  security_issues_fixed: number;
+  performance_score?: number;
+}
+
+// =============================================================================
+// Executive Dashboard Types
+// =============================================================================
+
+export interface ExecutiveSummary {
+  period: 'day' | 'week' | 'month';
+  total_deployments: number;
+  successful_deployments: number;
+  failed_deployments: number;
+  success_rate: number;
+  average_duration_seconds: number;
+  services_updated: string[];
+  active_contributors: string[];
+  highlights: DeploymentHighlight[];
+  by_environment: Record<string, EnvironmentStats>;
+}
+
+export interface EnvironmentStats {
+  deployments: number;
+  success_rate: number;
+  last_deployment?: string;
+}
+
+export interface DeploymentHighlight {
+  type: 'milestone' | 'alert' | 'trend';
+  severity: 'info' | 'success' | 'warning' | 'critical';
+  title: string;
+  description: string;
+  timestamp: string;
+  related_run_id?: number;
+}
+
+// =============================================================================
+// Real-time Status Types
+// =============================================================================
+
+export interface PipelineTransition {
+  run_id: number;
+  repository: string;
+  from_status: PipelineStatus;
+  to_status: PipelineStatus;
+  timestamp: string;
+  duration_seconds?: number;
+}
+
+export interface ActivePipelineState {
+  repository: string;
+  run_id: number;
+  status: PipelineStatus;
+  started_at: string;
+  current_job?: string;
+  progress_percent: number;
+  estimated_completion?: string;
 }
 
 // =============================================================================

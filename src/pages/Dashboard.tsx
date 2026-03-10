@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { RefreshCw, Filter, CheckCircle, XCircle, Clock, Radio } from 'lucide-react';
 import { useRecentRuns, usePipelineStats } from '@/hooks/usePipelines';
+import { usePipelineTransitions } from '@/hooks/useTransitions';
 import { hasGitHubToken } from '@/api/github';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { PipelineCard } from '@/components/pipeline/PipelineCard';
+import { TransitionNotifications } from '@/components/pipeline/TransitionNotification';
 import { formatDuration } from '@/lib/utils';
 import type { PipelineStatus } from '@/types/pipeline';
 
@@ -14,6 +16,9 @@ export function Dashboard() {
   const { data: runs, isLoading, error, refetch, isFetching } = useRecentRuns(100);
 
   const stats = usePipelineStats(runs);
+  
+  // Track pipeline transitions for notifications
+  const { recentTransitions, clearTransition } = usePipelineTransitions(runs);
 
   // Filter runs by status
   const filteredRuns = runs?.filter((run) => {
@@ -35,18 +40,20 @@ export function Dashboard() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Pipeline Dashboard</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">
+            Pipeline Dashboard
+          </h1>
+          <p className="text-white/50 mt-1">
             Monitor CI/CD pipeline status across all repositories
           </p>
         </div>
         <div className="flex items-center gap-3">
           {/* Live indicator */}
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <div className="flex items-center gap-1.5 text-xs text-white/50">
             <Radio className="h-3 w-3 text-green-500 animate-pulse" />
             <span>Live updates {hasGitHubToken() ? 'enabled' : '(unauthenticated)'}</span>
           </div>
@@ -55,6 +62,7 @@ export function Dashboard() {
             size="sm"
             onClick={() => refetch()}
             disabled={isFetching}
+            className="dark:border-white/20 dark:hover:bg-white/10"
           >
             <RefreshCw className={`h-4 w-4 mr-2 ${isFetching ? 'animate-spin' : ''}`} />
             Refresh
@@ -139,6 +147,12 @@ export function Dashboard() {
           </CardContent>
         </Card>
       )}
+
+      {/* Pipeline transition notifications */}
+      <TransitionNotifications
+        transitions={recentTransitions}
+        onDismiss={clearTransition}
+      />
     </div>
   );
 }

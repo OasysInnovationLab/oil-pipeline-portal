@@ -4,6 +4,7 @@ import { Layout } from './components/Layout';
 import { Dashboard } from './pages/Dashboard';
 import { RunDetail } from './pages/RunDetail';
 import { Login } from './pages/Login';
+import { ExecutiveDashboard } from './pages/ExecutiveDashboard';
 import { LoadingSpinner } from './components/ui/LoadingSpinner';
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
     <Layout>
       <Routes>
         <Route path="/" element={<Dashboard />} />
+        <Route path="/executive" element={<ExecutiveDashboard />} />
         <Route path="/runs/:owner/:repo/:runId" element={<RunDetail />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
