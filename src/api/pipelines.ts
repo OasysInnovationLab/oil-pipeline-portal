@@ -17,14 +17,17 @@ import {
 
 const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
-// List of repositories to display (can be fetched from a config endpoint later)
+// List of repositories to display
+// TODO: Consider moving to environment config or API discovery
 const REPOSITORIES = [
+  // Client-specific service repos
   'OasysInnovationLab/uscg-alc-ce-tip-wfe',
   'OasysInnovationLab/uscg-alc-ce-tip-ms',
-  'OasysInnovationLab/uscg-alc--service-template',
-  'OasysInnovationLab/uscg-alc--ci-test-harness',
+  // Platform repos (client-agnostic)
+  'OasysInnovationLab/oil-sf--test-harness',
   'OasysInnovationLab/oil-ai-agent-foundry',
   'OasysInnovationLab/oil-keycloak',
+  // Note: oil-sf--service-template is archived and excluded
 ];
 
 // Cache for rate limit tracking
