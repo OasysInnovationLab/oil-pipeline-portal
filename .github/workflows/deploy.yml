@@ -30,10 +30,35 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          VITE_KEYCLOAK_URL: https://auth.oasysic.net
+          # Must be id., not auth. Keycloak runs with KC_HOSTNAME=id.oasysic.net
+          # and rewrites every frontend URL to that host, so a login started on
+          # auth. sets its cookies there and then posts the form to id., which
+          # never receives them -> "cookie_not_found" -> the generic Keycloak
+          # error page, after the password is entered. This also matches the
+          # token issuer (https://id.oasysic.net/realms/oil).
+          VITE_KEYCLOAK_URL: https://id.oasysic.net
           VITE_KEYCLOAK_REALM: oil
           VITE_KEYCLOAK_CLIENT_ID: pipeline-portal
-          VITE_GITHUB_TOKEN: ${{ secrets.VITE_GITHUB_TOKEN }}
+          #
+          # VITE_GITHUB_TOKEN is deliberately NOT set. Vite inlines every VITE_*
+          # variable into the client bundle, so passing a PAT here published it
+          # to anyone who fetched /assets/index-*.js. The token that was here is
+          # compromised and must be revoked.
+          #
+          # Nothing breaks: isGitHubApiEnabled() already returns false without a
+          # token, so the portal falls back to its S3 data feed, which is the
+          # intended architecture. The GitHub path only ever served in-progress
+          # runs and runs missing from S3.
+
+      # A secret must never reach the client bundle again. Vite inlines VITE_*
+      # by design, so the guard belongs at build time, not in review.
+      - name: Fail if a credential reached the bundle
+        run: |
+          if grep -rEq 'github_pat_[A-Za-z0-9_]{20,}|ghp_[A-Za-z0-9]{30,}|AKIA[0-9A-Z]{16}' dist/; then
+            echo "::error::A credential is present in the built bundle. Anything named VITE_* is inlined into client-side JavaScript and served publicly. Do not pass secrets to the build."
+            exit 1
+          fi
+          echo "No credential patterns found in dist/."
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
