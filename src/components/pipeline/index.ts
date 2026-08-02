@@ -5,3 +5,4 @@ export { CorrectiveActions, CorrectiveActionsSummary } from './CorrectiveActions
 export { OverviewSummary } from './OverviewSummary';
 export { DeploymentSummary, DeploymentSummaryCompact } from './DeploymentSummary';
 export { TransitionNotification, TransitionNotifications } from './TransitionNotification';
+export { TierBadge } from './TierBadge';

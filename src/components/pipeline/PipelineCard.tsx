@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { GitCommit, GitPullRequest, Clock, User, ExternalLink } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
 import { StatusBadge } from './StatusBadge';
+import { TierBadge } from './TierBadge';
 import { formatDuration, formatRelativeTime, truncateCommitMessage } from '@/lib/utils';
 import type { PipelineIndexEntry } from '@/types/pipeline';
 
@@ -24,6 +25,7 @@ export function PipelineCard({ run }: PipelineCardProps) {
               <div className="flex items-center gap-2 mb-2">
                 <span className="font-semibold text-sm truncate group-hover:text-primary transition-colors">{repo}</span>
                 <StatusBadge status={run.status} size="sm" />
+                <TierBadge tier={run.atlas_tier} />
               </div>
 
               {/* Commit info */}

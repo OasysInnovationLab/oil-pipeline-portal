@@ -2,6 +2,13 @@
 // Pipeline Types
 // =============================================================================
 
+/**
+ * Atlas assurance tier declared by the project's oil-sf.yml.
+ * Optional: runs produced before tier reporting existed have no value, which
+ * is distinct from an explicit `none`.
+ */
+export type AtlasTier = 'none' | 'vector' | 'grid' | 'prime';
+
 export interface PipelineRun {
   run_id: number;
   repository: string;
@@ -20,6 +27,7 @@ export interface PipelineRun {
   corrective_actions: CorrectiveAction[];
   links: PipelineLinks;
   deployment_summary?: DeploymentSummary;
+  atlas_tier?: AtlasTier;
 }
 
 export interface CommitInfo {
@@ -90,6 +98,7 @@ export interface PipelineIndexEntry {
   completed_at: string;
   duration_seconds: number;
   pull_request_number: number | null;
+  atlas_tier?: AtlasTier;
 }
 
 export interface PipelineManifest {
