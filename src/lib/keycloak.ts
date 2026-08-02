@@ -5,7 +5,7 @@ import Keycloak from 'keycloak-js';
 // =============================================================================
 
 const keycloakConfig = {
-  url: import.meta.env.VITE_KEYCLOAK_URL || 'https://auth.oasysic.net',
+  url: import.meta.env.VITE_KEYCLOAK_URL || 'https://id.oasysic.net',
   realm: import.meta.env.VITE_KEYCLOAK_REALM || 'oil',
   clientId: import.meta.env.VITE_KEYCLOAK_CLIENT_ID || 'pipeline-portal',
 };
