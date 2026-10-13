@@ -27,6 +27,8 @@ const REPOSITORIES = [
   'OasysInnovationLab/oil-sf--test-harness',
   'OasysInnovationLab/oil-ai-agent-foundry',
   'OasysInnovationLab/oil-keycloak',
+  // Factory demo service, staged by oil-sf-demo (Atlas tier climb)
+  'OasysInnovationLab/oil-sf-demo-svc',
   // Note: oil-sf--service-template is archived and excluded
 ];
 
