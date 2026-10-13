@@ -31,19 +31,19 @@ const tierConfig: Record<
   vector: {
     icon: Shield,
     label: 'Vector',
-    title: 'Atlas Tier 1 — baseline controls: scanning and policy checks',
+    title: 'Atlas Tier 1 — baseline: secrets, blocked packages and container vulnerabilities are checked on every change',
     className: 'text-sky-400 bg-sky-500/10 border-sky-500/20',
   },
   grid: {
     icon: ShieldAlert,
     label: 'Grid',
-    title: 'Atlas Tier 2 — structured governance: controlled promotion, deeper enforcement',
+    title: 'Atlas Tier 2 — governed: adds tests, code analysis, a hardened base image, and proof the image runs locked down',
     className: 'text-violet-400 bg-violet-500/10 border-violet-500/20',
   },
   prime: {
     icon: ShieldCheck,
     label: 'Prime',
-    title: 'Atlas Tier 3 — highest assurance: full evidence and audit rigour',
+    title: 'Atlas Tier 3 — highest assurance: adds smoke tests after every deploy; high-severity findings block every environment',
     className: 'text-amber-400 bg-amber-500/10 border-amber-500/20',
   },
 };
