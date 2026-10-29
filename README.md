@@ -19,7 +19,7 @@ Pipeline Status Portal for OIL Software Factory - Track CI/CD pipeline status an
 ### Pipeline Dashboard (`/`)
 
 The main dashboard shows all recent pipeline runs across repositories with:
-- Real-time status updates from GitHub Actions
+- Each run as soon as it finishes, written to S3 by the pipeline's `report` job
 - Filtering by status (success, failure, in-progress)
 - Live notifications when pipelines complete
 - Statistics including success rate and average duration
@@ -132,8 +132,8 @@ src/
 
 ## Related Infrastructure
 
-- **Terraform modules**: `uscg-iac/modules/s3-pipeline-results/`, `uscg-iac/modules/s3-static-site/`
-- **Pipeline reporting**: `uscg-ci/.github/workflows/pipeline-report.yml`
+- **Terraform**: `oil-iac/environments/dev/pipeline-portal/` (modules `s3-pipeline-results`, `s3-static-site`)
+- **Pipeline reporting**: `oil-sf-ci/.github/workflows/pipeline-report.yml`, called by the orchestrator's final `report` job
 - **Keycloak config**: `oil-keycloak/config/clients/pipeline-portal.json`
 
 ## License
