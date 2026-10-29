@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { RefreshCw, Filter, CheckCircle, XCircle, Clock, Radio } from 'lucide-react';
 import { useRecentRuns, usePipelineStats } from '@/hooks/usePipelines';
 import { usePipelineTransitions } from '@/hooks/useTransitions';
-import { hasGitHubToken } from '@/api/github';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
@@ -55,7 +54,7 @@ export function Dashboard() {
           {/* Live indicator */}
           <div className="flex items-center gap-1.5 text-xs text-white/50">
             <Radio className="h-3 w-3 text-green-500 animate-pulse" />
-            <span>Live updates {hasGitHubToken() ? 'enabled' : '(unauthenticated)'}</span>
+            <span>Refreshes automatically</span>
           </div>
           <Button
             variant="outline"
